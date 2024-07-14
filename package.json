@@ -17,6 +17,7 @@
     "tsx": "^4.7.2"
   },
   "dependencies": {
+    "p-limit": "^6.1.0",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^22.6.5"
   }
