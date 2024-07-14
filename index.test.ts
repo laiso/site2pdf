@@ -1,4 +1,37 @@
-import { generateSlug } from './index';
+import fs from 'fs';
+import { join } from 'path';
+import puppeteer, { Browser } from 'puppeteer';
+import { generatePDF, generateSlug } from './index';
+
+jest.mock('puppeteer');
+
+beforeAll(() => {
+    jest.spyOn(console, 'log').mockImplementation(() => { });
+});
+afterAll(() => {
+    (console.log as jest.Mock).mockRestore();
+});
+
+describe('generatePDF', () => {
+    it('should generate a PDF for a valid URL', async () => {
+        const mockBrowser = {
+            newPage: jest.fn().mockResolvedValue({
+                evaluate: jest.fn().mockResolvedValue(['https://example.com/page1', 'https://example.com/page2', 'https://example.com/page3']),
+                pdf: jest.fn().mockResolvedValue(Buffer.from(fs.readFileSync(join(__dirname, 'fixture.pdf')))),
+                goto: jest.fn(),
+                close: jest.fn(),
+            }),
+            close: jest.fn(),
+        };
+        (puppeteer.launch as jest.Mock).mockResolvedValue(mockBrowser);
+
+        const url = 'https://example.com';
+        const urlPattern = new RegExp(`^${url}`);
+        const pdfBuffer = await generatePDF(mockBrowser as unknown as Browser, url, urlPattern);
+
+        expect(pdfBuffer).toBeInstanceOf(Buffer);
+    });
+});
 
 describe('testGenerateSlug', () => {
     it('should generate correct slug for various URLs', () => {
