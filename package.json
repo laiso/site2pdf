@@ -1,0 +1,20 @@
+{
+  "name": "site2pdf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts"
+  },
+  "author": "laiso",
+  "license": "MIT",
+  "devDependencies": {
+    "tsx": "^4.7.2"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^22.6.5"
+  }
+}
