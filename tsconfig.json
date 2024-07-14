@@ -1,13 +1,19 @@
 {
-    "compilerOptions": {
-        "stripInternal": true,
-        "esModuleInterop": true
-    },
-    "include": [
-        "."
-    ],
-    "exclude": [
-        "out",
-        "node_modules"
-    ]
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "esnext",
+		"moduleResolution": "node",
+		"allowJs": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"incremental": true
+	},
+	"include": ["**/*"],
+	"exclude": ["node_modules", "out"]
 }

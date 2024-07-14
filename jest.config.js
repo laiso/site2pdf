@@ -1,6 +1,3 @@
-module.exports = {
-    preset: 'ts-jest',
-    testEnvironment: 'node',
-    testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
-  };
-  
+export default {
+	preset: "ts-jest/presets/js-with-ts-esm",
+};
