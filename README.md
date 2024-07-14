@@ -24,7 +24,21 @@ npm start -- <main_url> [url_pattern]
 **Example**
 
 ```bash
-npm start -- https://www.example.com/ /https://www.example.com/sub/
+npm start -- 'https://www.typescriptlang.org/docs/handbook/' 'https://www.typescriptlang.org/docs/handbook/2/'
+
+> site2pdf@1.0.0 start
+> tsx index.ts https://www.typescriptlang.org/docs/handbook/ https://www.typescriptlang.org/docs/handbook/2/
+
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/basic-types.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/narrowing.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/functions.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/objects.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/classes.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/modules.html
+Generating PDF for: https://www.typescriptlang.org/docs/handbook/2/types-from-types.html
+PDF saved to ./out/www-typescriptlang-org-docs-handbook.pdf
 ```
 
 This command will generate a PDF file named `www.example.com.pdf` containing all pages on the example.com domain.
