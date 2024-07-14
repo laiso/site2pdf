@@ -65,12 +65,14 @@ async function generatePDF(url: string, urlPattern: RegExp = new RegExp(`^${url}
 }
 
 // Function to generate a slug from a URL
-function generateSlug(url: string): string {
+export function generateSlug(url: string): string {
     return url
         .replace(/https?:\/\//, '') // Remove protocol
-        .replace(/[^\w\s.-]/g, '')   // Remove non-alphanumeric characters
+        .replace(/[^\w\s-]/g, '-')  // Remove non-alphanumeric characters
         .replace(/\s+/g, '-')       // Replace spaces with hyphens
-        .replace(/\./g, '-')       // Replace dots with hyphens
+        .replace(/\./g, '-')        // Replace periods with hyphens
+        .replace(/-+/g, '-')        // Replace multiple hyphens with a single hyphen
+        .replace(/^-|-$/g, '')      // Remove leading and trailing hyphens
         .toLowerCase();             // Convert to lowercase
 }
 
