@@ -1,11 +1,19 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import { PDFDocument } from 'pdf-lib';
-import {writeFileSync, existsSync, mkdirSync} from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { Buffer } from 'buffer';
-import {join} from "path";
+import { join } from "path";
+import { cpus } from 'os';
+import pLimit from 'p-limit';
 
-async function generatePDF(url: string, urlPattern: RegExp = new RegExp(`^${url}`)): Promise<Buffer> {
-    const browser = await puppeteer.launch();
+
+export async function generatePDF(
+    browser: Browser,
+    url: string,
+    urlPattern: RegExp = new RegExp(`^${url}`),
+    concurrentLimit: number = cpus().length
+): Promise<Buffer> {
+    const limit = pLimit(concurrentLimit);
     const page = await browser.newPage();
 
     // Navigate to the main page
@@ -45,7 +53,7 @@ async function generatePDF(url: string, urlPattern: RegExp = new RegExp(`^${url}
     };
 
     // Generate PDFs for all sub-links in parallel
-    const pdfPromises = uniqueSubLinks.map(link => generatePDFForPage(link));
+    const pdfPromises = uniqueSubLinks.map(link => limit(() => generatePDFForPage(link)));
     const pdfBytesArray = await Promise.all(pdfPromises);
 
     // Merge all PDFs into the main PDF document
@@ -76,11 +84,12 @@ export function generateSlug(url: string): string {
         .toLowerCase();             // Convert to lowercase
 }
 
-// Example usage
-const mainURL = process.argv[2];
-const urlPattern = process.argv[3] ? new RegExp(process.argv[3]) : new RegExp(`^${mainURL}`);
-generatePDF(mainURL, urlPattern)
-    .then((pdfBuffer) => {
+async function main() {
+    const mainURL = process.argv[2];
+    const urlPattern = process.argv[3] ? new RegExp(process.argv[3]) : new RegExp(`^${mainURL}`);
+    const browser = await puppeteer.launch();
+    try {
+        const pdfBuffer = await generatePDF(browser, mainURL, urlPattern);
         const slug = generateSlug(mainURL); // Generate slug from mainURL
         const outputDir = join(__dirname, 'out');
         const outputPath = join(outputDir, `${slug}.pdf`);
@@ -92,5 +101,11 @@ generatePDF(mainURL, urlPattern)
 
         writeFileSync(outputPath, pdfBuffer); // Save with slugified name
         console.log(`PDF saved to ${outputPath}`);
-    })
-    .catch((error) => console.error('Error generating PDF:', error));
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+    }
+}
+
+if (require.main === module) {
+    main();
+}

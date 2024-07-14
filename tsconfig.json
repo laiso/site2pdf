@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "stripInternal": true,
+        "esModuleInterop": true
+    },
+    "include": [
+        "."
+    ],
+    "exclude": [
+        "out",
+        "node_modules"
+    ]
+}
