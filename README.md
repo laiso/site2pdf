@@ -25,7 +25,9 @@ npm start -- <main_url> [url_pattern]
 
 ```bash
 npm start -- 'https://www.typescriptlang.org/docs/handbook/' 'https://www.typescriptlang.org/docs/handbook/2/'
+```
 
+```bash
 > site2pdf@1.0.0 start
 > tsx index.ts https://www.typescriptlang.org/docs/handbook/ https://www.typescriptlang.org/docs/handbook/2/
 
