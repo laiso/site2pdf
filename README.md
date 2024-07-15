@@ -8,6 +8,17 @@ This tool generates a PDF file containing the main page and all sub-pages of a w
 
 To run this software, you need to have Node.js installed on your machine. You can download and install the latest version of Node.js from [the official Node.js website](https://nodejs.org/).
 
+### Dependencies(Linux)
+
+This project uses the following dependencies:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y libxkbcommon0
+sudo apt-get install -y libnss3 libxss1 libasound2
+sudo apt-get install -y fonts-liberation libappindicator3-1 libatk-bridge2.0-0 libatspi2.0-0 libgtk-3-0 libgbm-dev
+```
+
 ## Usage
 
 ```bash
