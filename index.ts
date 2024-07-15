@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import { writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { cpus } from "node:os";
 
 import puppeteer, { type Browser } from "puppeteer";
@@ -94,6 +95,9 @@ async function main() {
 	const urlPattern = process.argv[3]
 		? new RegExp(process.argv[3])
 		: new RegExp(`^${mainURL}`);
+	console.log(
+		`Generating PDF for ${mainURL} and sub-links matching ${urlPattern}`,
+	);
 	const browser = await puppeteer.launch();
 	try {
 		const pdfBuffer = await generatePDF(browser, mainURL, urlPattern);
@@ -113,6 +117,6 @@ async function main() {
 	}
 }
 
-if (import.meta.url === new URL(process.argv[1], import.meta.url).href) {
+if (fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
 	main();
 }
