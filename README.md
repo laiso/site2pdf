@@ -33,7 +33,7 @@ npx laiso/site2pdf <main_url> [url_pattern]
 ### Example
 
 ```bash
-npx laiso/site2pdf 'https://www.typescriptlang.org/docs/handbook/' 'https://www.typescriptlang.org/docs/handbook/2/'
+npx laiso/site2pdf "https://www.typescriptlang.org/docs/handbook/" "https://www.typescriptlang.org/docs/handbook/2/"
 ```
 
 ```bash
@@ -53,6 +53,16 @@ PDF saved to ./out/www-typescriptlang-org-docs-handbook.pdf
 ```
 
 This command will generate a PDF file named `www.typescriptlang.org-docs-handbook.pdf` containing all pages on the `https://www.typescriptlang.org/docs/handbook/` domain that match the pattern `https://www.typescriptlang.org/docs/handbook/2/`.
+
+## Troubleshooting for Windows
+
+When running Puppeteer on Windows, you may encounter permission issues related to generating PDFs. To resolve this, you need to grant appropriate permissions. Follow these steps:
+
+```powershell
+icacls %USERPROFILE%/.cache/puppeteer/chrome /grant *S-1-15-2-1:(OI)(CI)(RX)
+```
+
+[Troubleshooting - Chrome reports sandbox errors on Windows| Puppeteer](https://pptr.dev/troubleshooting#chrome-reports-sandbox-errors-on-windows)
 
 ## Implementation Details
 
