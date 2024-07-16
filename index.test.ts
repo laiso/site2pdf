@@ -72,11 +72,26 @@ describe("testGenerateSlug", () => {
 describe("normalizeURL", () => {
 	it("should normalize URLs correctly", () => {
 		const testCases = [
-			{ input: "https://example.com/", expected: "https://example.com" },
-			{ input: "https://example.com/page/", expected: "https://example.com/page" },
-			{ input: "https://example.com/page#section", expected: "https://example.com/page" },
-			{ input: "https://example.com/page/#section", expected: "https://example.com/page" },
-			{ input: "https://example.com/page?query=param", expected: "https://example.com/page?query=param" },
+			{
+				input: "https://example.com/",
+				expected: "https://example.com",
+			},
+			{
+				input: "https://example.com/page/",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page#section",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page/#section",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page?query=param",
+				expected: "https://example.com/page?query=param",
+			},
 		];
 
 		for (const { input, expected } of testCases) {

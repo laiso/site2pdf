@@ -28,7 +28,7 @@ export async function generatePDF(
 	}, urlPattern.source);
 
 	// Remove anchor links from the sub-links list
-	const subLinksWithoutAnchors = subLinks.map(link => normalizeURL(link));
+	const subLinksWithoutAnchors = subLinks.map((link) => normalizeURL(link));
 
 	// Remove duplicate pages from the sub-links list
 	const uniqueSubLinks = Array.from(new Set(subLinksWithoutAnchors));
@@ -93,7 +93,9 @@ export function generateSlug(url: string): string {
 // Function to generate a normalized URL
 export function normalizeURL(url: string): string {
 	const urlWithoutAnchor = url.split("#")[0];
-	return urlWithoutAnchor.endsWith("/") ? urlWithoutAnchor.slice(0, -1) : urlWithoutAnchor;
+	return urlWithoutAnchor.endsWith("/")
+		? urlWithoutAnchor.slice(0, -1)
+		: urlWithoutAnchor;
 }
 
 async function main() {
