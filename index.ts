@@ -28,7 +28,7 @@ export async function generatePDF(
 	}, urlPattern.source);
 
 	// Remove anchor links from the sub-links list
-	const subLinksWithoutAnchors = subLinks.map((link) => link.split("#")[0]);
+	const subLinksWithoutAnchors = subLinks.map((link) => normalizeURL(link));
 
 	// Remove duplicate pages from the sub-links list
 	const uniqueSubLinks = Array.from(new Set(subLinksWithoutAnchors));
@@ -88,6 +88,14 @@ export function generateSlug(url: string): string {
 		.replace(/-+/g, "-") // Replace multiple hyphens with a single hyphen
 		.replace(/^-|-$/g, "") // Remove leading and trailing hyphens
 		.toLowerCase(); // Convert to lowercase
+}
+
+// Function to generate a normalized URL
+export function normalizeURL(url: string): string {
+	const urlWithoutAnchor = url.split("#")[0];
+	return urlWithoutAnchor.endsWith("/")
+		? urlWithoutAnchor.slice(0, -1)
+		: urlWithoutAnchor;
 }
 
 async function main() {

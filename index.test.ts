@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { join } from "node:path";
 import type { Browser } from "puppeteer";
 import { jest } from "@jest/globals";
-import { generatePDF, generateSlug } from "./index";
+import { generatePDF, generateSlug, normalizeURL } from "./index";
 
 beforeAll(() => {
 	jest.spyOn(console, "log").mockImplementation(() => {});
@@ -65,6 +65,38 @@ describe("testGenerateSlug", () => {
 		for (const { input, expected } of testCases) {
 			const result = generateSlug(input);
 			expect(result).toBe(expected);
+		}
+	});
+});
+
+describe("normalizeURL", () => {
+	it("should normalize URLs correctly", () => {
+		const testCases = [
+			{
+				input: "https://example.com/",
+				expected: "https://example.com",
+			},
+			{
+				input: "https://example.com/page/",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page#section",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page/#section",
+				expected: "https://example.com/page",
+			},
+			{
+				input: "https://example.com/page?query=param",
+				expected: "https://example.com/page?query=param",
+			},
+		];
+
+		for (const { input, expected } of testCases) {
+			const normalized = normalizeURL(input);
+			expect(normalized).toBe(expected);
 		}
 	});
 });
