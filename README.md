@@ -8,6 +8,12 @@ This tool generates a PDF file containing the main page and all sub-pages of a w
 
 <img height="400" alt="chatgpt qa" src="https://github.com/user-attachments/assets/665e01b2-237d-4ac3-86c5-d959675cd978">
 
+## Motivation
+
+**🧳Portability:** Combining multiple pages of a website into a single file enhances portability, making it easier to share and use the information.  
+**🤖AI Integration:** In some use cases, such as with [Google NotebookLM](https://notebooklm.google.com/) and [ChatGPT GPTs](https://chatgpt.com/gpts), providing a master dataset in PDF format helps in creating more efficient bots.  
+**🖼️Visual Information Preservation:** By generating results in PDF format, visual information like images is preserved, ensuring better recognition by multimodal models.  
+
 ## Prerequisites
 
 To run this software, you need to have Node.js installed on your machine. You can download and install the latest version of Node.js from [the official Node.js website](https://nodejs.org/).
