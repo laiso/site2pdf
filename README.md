@@ -15,7 +15,7 @@ This tool generates a PDF file containing the main page and all sub-pages of a w
 **🖼️Visual Information Preservation:** By generating results in PDF format, visual information like images is preserved, ensuring better recognition by multimodal models.  
 
 ## Prerequisites
-
+****
 To run this software, you need to have Node.js installed on your machine. You can download and install the latest version of Node.js from [the official Node.js website](https://nodejs.org/).
 
 ### Dependencies(Linux)
