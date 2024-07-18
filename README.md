@@ -32,7 +32,7 @@ sudo apt-get install -y fonts-liberation libappindicator3-1 libatk-bridge2.0-0 l
 ## Usage
 
 ```bash
-npx laiso/site2pdf <main_url> [url_pattern]
+npx site2pdf-cli <main_url> [url_pattern]
 ```
 
 ### Arguments
@@ -43,7 +43,7 @@ npx laiso/site2pdf <main_url> [url_pattern]
 ### Example
 
 ```bash
-npx laiso/site2pdf "https://www.typescriptlang.org/docs/handbook/" "https://www.typescriptlang.org/docs/handbook/2/"
+npx site2pdf-cli "https://www.typescriptlang.org/docs/handbook/" "https://www.typescriptlang.org/docs/handbook/2/"
 ```
 
 ```bash
