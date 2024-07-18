@@ -9,10 +9,23 @@
 	"scripts": {
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
 		"start": "tsx index.ts",
-		"dev": "tsx watch index.ts"
+		"dev": "tsx watch index.ts",
+		"publish": "npm publish"
 	},
 	"author": "laiso",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/laiso/site2pdf.git"
+	},
+	"keywords": [
+		"crawler",
+		"PDF"
+	],
+	"homepage": "https://github.com/laiso/site2pdf#readme",
+	"bugs": {
+		"url": "https://github.com/laiso/site2pdf/issues"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/jest": "^29.5.12",
