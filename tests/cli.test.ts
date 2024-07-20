@@ -3,6 +3,10 @@ import { join } from "node:path";
 
 describe("CLI Integration Tests", () => {
 	const localMainFile = join(process.cwd(), "tests", "fixtures", "index.html");
+	beforeAll(() => {
+		exec("npm run build");
+	});
+
 	it("should generate a PDF for a valid local file using the CLI", (done) => {
 		const mainURL = `file://${localMainFile}`;
 		const cliCommand = `node bin/site2pdf.js ${mainURL}`;
