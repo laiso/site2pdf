@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const result = spawnSync(
 	"npx",
-	["tsx", path.resolve(__dirname, "../index.ts"), ...args],
+	["tsx", path.resolve(__dirname, "../src/index.ts"), ...args],
 	{
 		stdio: "inherit",
 	},
