@@ -12,7 +12,11 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"resolveJsonModule": true,
-		"incremental": true
+		"incremental": true,
+		"baseUrl": ".",
+		"paths": {
+			"site2pdf/*": ["src/*"]
+		}
 	},
 	"include": ["**/*"],
 	"exclude": ["node_modules", "out"]

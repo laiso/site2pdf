@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { join } from "node:path";
 import type { Browser } from "puppeteer";
 import { jest } from "@jest/globals";
-import { generatePDF, generateSlug, normalizeURL } from "./index";
+import { generatePDF, generateSlug, normalizeURL } from "site2pdf/index";
 
 beforeAll(() => {
 	jest.spyOn(console, "log").mockImplementation(() => {});
@@ -22,7 +22,12 @@ describe("generatePDF", () => {
 					"https://example.com/page3",
 				],
 				pdf: async () => {
-					const fixturePath = join(process.cwd(), "fixture.pdf");
+					const fixturePath = join(
+						process.cwd(),
+						"tests",
+						"fixtures",
+						"sample.pdf",
+					);
 					return Buffer.from(fs.readFileSync(fixturePath));
 				},
 				goto: async () => {},
