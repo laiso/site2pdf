@@ -12,14 +12,23 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
-		"noEmit": true,
+		"noEmit": false,
 		"resolveJsonModule": true,
 		"incremental": true,
 		"baseUrl": ".",
 		"paths": {
-			"site2pdf/*": ["src/*"]
+			"site2pdf/*": [
+				"src/*"
+			]
 		}
 	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules", "out", "test", "bin"]
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"out",
+		"test",
+		"bin"
+	]
 }

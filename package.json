@@ -4,12 +4,12 @@
 	"type": "module",
 	"description": "Generate comprehensive PDFs of entire websites, ideal for RAG. ",
 	"bin": {
-		"site2pdf": "bin/site2pdf.js"
+		"site2pdf": "bin/index.js"
 	},
 	"scripts": {
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-		"build": "tsc && tsc --module nodenext --outDir bin",
-		"start": "node bin/site2pdf.js",
+		"build": "tsc",
+		"start": "node bin/index.js",
 		"dev": "tsc -w",
 		"publish": "npm publish",
 		"lint": "biome lint",
@@ -21,7 +21,10 @@
 		"type": "git",
 		"url": "https://github.com/laiso/site2pdf.git"
 	},
-	"keywords": ["crawler", "PDF"],
+	"keywords": [
+		"crawler",
+		"PDF"
+	],
 	"homepage": "https://github.com/laiso/site2pdf#readme",
 	"bugs": {
 		"url": "https://github.com/laiso/site2pdf/issues"
@@ -29,6 +32,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/jest": "^29.5.12",
+		"esbuild": "^0.23.0",
 		"jest": "^29.7.0",
 		"ts-jest": "^29.2.2"
 	},
