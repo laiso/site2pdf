@@ -8,8 +8,8 @@
 	},
 	"scripts": {
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-		"start": "tsx index.ts",
-		"dev": "tsx watch index.ts",
+		"start": "tsx src/index.ts",
+		"dev": "tsx watch src/index.ts",
 		"publish": "npm publish",
 		"lint": "biome lint",
 		"format": "biome format"
