@@ -106,7 +106,7 @@ npm install
 The project uses TypeScript. To compile the TypeScript files, run:
 
 ```bash
-npx tsc
+npm run build
 ```
 
 ### Running the Project
