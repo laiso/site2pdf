@@ -26,7 +26,7 @@ type BrowserContext = {
 
 async function useBrowserContext() {
 	const browser = await puppeteer.launch({
-		headless: false,
+		headless: true,
 		executablePath: chromeFinder(),
 	});
 	const page = (await browser.pages())[0];
@@ -44,7 +44,7 @@ export async function generatePDF(
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
 	const page = await ctx.browser.newPage();
-	await page.goto(url);
+	await page.goto(url, { waitUntil: 'networkidle2' });
 
 	const subLinks = await page.evaluate((patternString) => {
 		const pattern = new RegExp(patternString);
@@ -63,9 +63,9 @@ export async function generatePDF(
 
 	const generatePDFForPage = async (link: string) => {
 		const newPage = await ctx.browser.newPage();
-		await newPage.goto(link);
+		await newPage.goto(link, { waitUntil: 'networkidle2' });
 		const pdfBytes = await newPage.pdf({ format: "A4" });
-		await newPage.close();
+		console.log(`Generated PDF for ${link}`);
 		return pdfBytes;
 	};
 
