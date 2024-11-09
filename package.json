@@ -1,10 +1,10 @@
 {
 	"name": "site2pdf-cli",
-	"version": "0.1.1",
+	"version": "0.1.5",
 	"type": "module",
 	"description": "Generate comprehensive PDFs of entire websites, ideal for RAG. ",
 	"bin": {
-		"site2pdf": "bin/index.js"
+		"site2pdf": "bin/site2pdf.js"
 	},
 	"scripts": {
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -29,6 +29,10 @@
 	"bugs": {
 		"url": "https://github.com/laiso/site2pdf/issues"
 	},
+	"files": [
+		"dist",
+		"bin"
+	],
 	"devDependencies": {
 		"@babel/core": "^7.26.0",
 		"@babel/preset-env": "^7.26.0",
