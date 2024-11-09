@@ -4,7 +4,7 @@
 	"type": "module",
 	"description": "Generate comprehensive PDFs of entire websites, ideal for RAG. ",
 	"bin": {
-		"site2pdf": "bin/site2pdf.js"
+		"site2pdf": "bin/index.js"
 	},
 	"scripts": {
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
