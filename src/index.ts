@@ -62,8 +62,10 @@ export async function generatePDF(
 	const pdfDoc = await PDFDocument.create();
 
 	const generatePDFForPage = async (link: string) => {
-		await ctx.page.goto(link);
-		const pdfBytes = await ctx.page.pdf({ format: "A4" });
+		const newPage = await ctx.browser.newPage();
+		await newPage.goto(link);
+		const pdfBytes = await newPage.pdf({ format: "A4" });
+		await newPage.close();
 		return pdfBytes;
 	};
 
