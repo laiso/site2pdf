@@ -10,14 +10,16 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
-		"noEmit": true,
+		"noEmit": false,
 		"resolveJsonModule": true,
 		"incremental": true,
 		"baseUrl": ".",
 		"paths": {
 			"site2pdf/*": ["src/*"]
-		}
+		},
+		"outDir": "./dist",
+		"rootDir": "./src"
 	},
-	"include": ["**/*"],
-	"exclude": ["node_modules", "out"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "**/*.spec.ts"]
 }
