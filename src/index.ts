@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cpus } from "node:os";
 
-import puppeteer, { type Browser } from "puppeteer";
+import puppeteer, { type Browser, type Page } from "puppeteer";
 import pLimit from "p-limit";
 import { PDFDocument } from "pdf-lib";
 import chromeFinder from "chrome-finder";
@@ -19,6 +19,11 @@ Arguments:
 `);
 }
 
+type BrowserContext = {
+	browser: Browser,
+	page: Page,
+};
+
 async function useBrowserContext() {
 	const browser = await puppeteer.launch({
 		headless: false,
@@ -27,21 +32,18 @@ async function useBrowserContext() {
 	const page = (await browser.pages())[0];
 	return {
 		browser,
-		page,
-		async [Symbol.asyncDispose]() {
-			await browser.close();
-		},
+		page
 	};
 }
 
 export async function generatePDF(
-	browser: Browser,
+	ctx: BrowserContext,
 	url: string,
 	urlPattern: RegExp = new RegExp(`^${url}`),
 	concurrentLimit: number = cpus().length,
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
-	const page = await browser.newPage();
+	const page = await ctx.browser.newPage();
 	await page.goto(url);
 
 	const subLinks = await page.evaluate((patternString) => {
@@ -60,10 +62,8 @@ export async function generatePDF(
 	const pdfDoc = await PDFDocument.create();
 
 	const generatePDFForPage = async (link: string) => {
-		const newPage = await browser.newPage();
-		await newPage.goto(link);
-		const pdfBytes = await newPage.pdf({ format: "A4" });
-		await newPage.close();
+		await ctx.page.goto(link);
+		const pdfBytes = await ctx.page.pdf({ format: "A4" });
 		return pdfBytes;
 	};
 
@@ -86,8 +86,6 @@ export async function generatePDF(
 	const pdfBytes = await pdfDoc.save();
 	const pdfBuffer = Buffer.from(pdfBytes);
 
-	await browser.close();
-
 	return pdfBuffer;
 }
 
@@ -109,7 +107,7 @@ export function normalizeURL(url: string): string {
 		: urlWithoutAnchor;
 }
 
-async function main() {
+export async function main() {
 	const mainURL = process.argv[2];
 	const urlPattern = process.argv[3]
 		? new RegExp(process.argv[3])
@@ -123,9 +121,10 @@ async function main() {
 	console.log(
 		`Generating PDF for ${mainURL} and sub-links matching ${urlPattern}`,
 	);
+	let ctx;
 	try {
-		await using ctx = await useBrowserContext();
-		const pdfBuffer = await generatePDF(ctx.browser, mainURL, urlPattern);
+		ctx = await useBrowserContext();
+		const pdfBuffer = await generatePDF(ctx, mainURL, urlPattern);
 		const slug = generateSlug(mainURL);
 		const outputDir = join(process.cwd(), "out");
 		const outputPath = join(outputDir, `${slug}.pdf`);
@@ -134,10 +133,12 @@ async function main() {
 			mkdirSync(outputDir, { recursive: true });
 		}
 
-		writeFileSync(outputPath, pdfBuffer);
+		writeFileSync(outputPath, new Uint8Array(pdfBuffer));
 		console.log(`PDF saved to ${outputPath}`);
 	} catch (error) {
 		console.error("Error generating PDF:", error);
+	} finally {
+		ctx?.browser.close();
 	}
 }
 

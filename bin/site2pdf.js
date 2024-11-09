@@ -1,20 +1,7 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { main } from '../dist/index.js';
 
-const args = process.argv.slice(2);
+const [,, mainUrl, urlPattern] = process.argv;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const result = spawnSync(
-	"npx",
-	["tsx", path.resolve(__dirname, "../src/index.ts"), ...args],
-	{
-		stdio: "inherit",
-	},
-);
-
-process.exit(result.status);
+main(mainUrl, urlPattern);

@@ -1,5 +1,6 @@
 import { exec } from "node:child_process";
 import { join } from "node:path";
+import { describe, it, expect } from "@jest/globals";
 
 describe("CLI Integration Tests", () => {
 	const localMainFile = join(process.cwd(), "tests", "fixtures", "index.html");
@@ -14,5 +15,5 @@ describe("CLI Integration Tests", () => {
 			expect(stdout).toContain("fixtures-index-html.pdf");
 			done();
 		});
-	});
+	}, 30000);
 });

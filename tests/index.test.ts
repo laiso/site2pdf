@@ -35,11 +35,15 @@ describe("generatePDF", () => {
 			}),
 			close: async () => {},
 		} as unknown as Browser;
+		const ctx = {
+			browser: mockBrowser,
+			page: await mockBrowser.newPage(),
+		};
 
 		const url = "https://example.com";
 		const urlPattern = new RegExp(`^${url}`);
 		const pdfBuffer = await generatePDF(
-			mockBrowser as unknown as Browser,
+			ctx,
 			url,
 			urlPattern,
 		);
