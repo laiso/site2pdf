@@ -40,11 +40,11 @@ export async function generatePDF(
 	ctx: BrowserContext,
 	url: string,
 	urlPattern: RegExp = new RegExp(`^${url}`),
-	concurrentLimit: number = cpus().length,
+	concurrentLimit: number,
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
 	const page = await ctx.browser.newPage();
-	await page.goto(url, { waitUntil: 'networkidle2' });
+	await page.goto(url, { waitUntil: 'domcontentloaded' });
 
 	const subLinks = await page.evaluate((patternString) => {
 		const pattern = new RegExp(patternString);
@@ -62,17 +62,28 @@ export async function generatePDF(
 	const pdfDoc = await PDFDocument.create();
 
 	const generatePDFForPage = async (link: string) => {
+		console.log(`loading ${link}`);
 		const newPage = await ctx.browser.newPage();
-		await newPage.goto(link, { waitUntil: 'networkidle2' });
-		const pdfBytes = await newPage.pdf({ format: "A4" });
-		console.log(`Generated PDF for ${link}`);
-		return pdfBytes;
+		let pdfBytes;
+		try {
+			await newPage.goto(link, { waitUntil: 'domcontentloaded' });
+			pdfBytes = await newPage.pdf({ format: "A4" });
+			console.log(`Generated PDF for ${link}`);
+			return Buffer.from(pdfBytes);
+		} catch (error) {
+			console.warn(`Warning: Error occurred while processing ${link}: ${error}`);
+			return null;
+		} finally {
+			await newPage.close();
+		}
 	};
 
 	const pdfPromises = uniqueSubLinks.map((link) =>
 		limit(() => generatePDFForPage(link)),
 	);
-	const pdfBytesArray = await Promise.all(pdfPromises);
+	const pdfBytesArray = (await Promise.all(pdfPromises)).filter(
+		(buffer): buffer is Buffer => buffer !== null
+	);
 
 	for (const pdfBytes of pdfBytesArray) {
 		const subPdfDoc = await PDFDocument.load(pdfBytes);
@@ -126,7 +137,7 @@ export async function main() {
 	let ctx;
 	try {
 		ctx = await useBrowserContext();
-		const pdfBuffer = await generatePDF(ctx, mainURL, urlPattern);
+		const pdfBuffer = await generatePDF(ctx, mainURL, urlPattern, cpus().length);
 		const slug = generateSlug(mainURL);
 		const outputDir = join(process.cwd(), "out");
 		const outputPath = join(outputDir, `${slug}.pdf`);
