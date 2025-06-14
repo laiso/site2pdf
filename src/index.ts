@@ -7,7 +7,6 @@ import { cpus } from "node:os";
 import puppeteer, { type Browser, type Page } from "puppeteer";
 import pLimit from "p-limit";
 import { PDFDocument } from "pdf-lib";
-import chromeFinder from "chrome-finder";
 
 function showHelp() {
 	console.log(`
@@ -27,7 +26,7 @@ type BrowserContext = {
 async function useBrowserContext() {
 	const browser = await puppeteer.launch({
 		headless: true,
-		executablePath: chromeFinder(),
+		...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
 	});
 	const page = (await browser.pages())[0];
 	return {
@@ -39,8 +38,8 @@ async function useBrowserContext() {
 export async function generatePDF(
 	ctx: BrowserContext,
 	url: string,
-	urlPattern: RegExp = new RegExp(`^${url}`),
 	concurrentLimit: number,
+	urlPattern: RegExp = new RegExp(`^${url}`),
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
 	const page = await ctx.browser.newPage();
@@ -64,7 +63,7 @@ export async function generatePDF(
 	const generatePDFForPage = async (link: string) => {
 		console.log(`loading ${link}`);
 		const newPage = await ctx.browser.newPage();
-		let pdfBytes;
+		let pdfBytes: Uint8Array;
 		try {
 			await newPage.goto(link, { waitUntil: 'domcontentloaded' });
 			pdfBytes = await newPage.pdf({ format: "A4" });
@@ -82,17 +81,19 @@ export async function generatePDF(
 		limit(() => generatePDFForPage(link)),
 	);
 	const pdfBytesArray = (await Promise.all(pdfPromises)).filter(
-		(buffer): buffer is Buffer => buffer !== null
+		(buffer) => buffer !== null
 	);
 
 	for (const pdfBytes of pdfBytesArray) {
-		const subPdfDoc = await PDFDocument.load(pdfBytes);
-		const copiedPages = await pdfDoc.copyPages(
-			subPdfDoc,
-			subPdfDoc.getPageIndices(),
-		);
-		for (const page of copiedPages) {
-			pdfDoc.addPage(page);
+		if (pdfBytes) {
+			const subPdfDoc = await PDFDocument.load(pdfBytes);
+			const copiedPages = await pdfDoc.copyPages(
+				subPdfDoc,
+				subPdfDoc.getPageIndices(),
+			);
+			for (const page of copiedPages) {
+				pdfDoc.addPage(page);
+			}
 		}
 	}
 
@@ -134,10 +135,10 @@ export async function main() {
 	console.log(
 		`Generating PDF for ${mainURL} and sub-links matching ${urlPattern}`,
 	);
-	let ctx;
+	let ctx: BrowserContext | undefined;
 	try {
 		ctx = await useBrowserContext();
-		const pdfBuffer = await generatePDF(ctx, mainURL, urlPattern, cpus().length);
+		const pdfBuffer = await generatePDF(ctx, mainURL, cpus().length, urlPattern);
 		const slug = generateSlug(mainURL);
 		const outputDir = join(process.cwd(), "out");
 		const outputPath = join(outputDir, `${slug}.pdf`);
