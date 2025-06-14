@@ -46,7 +46,6 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"chrome-finder": "^1.0.7",
 		"p-limit": "^6.1.0",
 		"pdf-lib": "^1.17.1",
 		"puppeteer": "^22.6.5"

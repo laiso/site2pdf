@@ -45,6 +45,7 @@ describe("generatePDF", () => {
 		const pdfBuffer = await generatePDF(
 			ctx,
 			url,
+			1,
 			urlPattern,
 		);
 
