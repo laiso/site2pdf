@@ -74,6 +74,14 @@ icacls %USERPROFILE%/.cache/puppeteer/chrome /grant *S-1-15-2-1:(OI)(CI)(RX)
 
 [Troubleshooting - Chrome reports sandbox errors on Windows| Puppeteer](https://pptr.dev/troubleshooting#chrome-reports-sandbox-errors-on-windows)
 
+## ARM64 Limitation
+
+**Note:** This tool currently does not work on ARM64 Linux systems. Chrome does not provide ARM64 binaries for Linux, which causes Puppeteer to fail with errors like "Failed to launch the browser process!" or "chrome-linux64/chrome: 1: Syntax error: "(" unexpected".
+
+For more information, see:
+- [Puppeteer Troubleshooting - Chrome downloads](https://pptr.dev/troubleshooting)
+- [Chrome for Testing ARM64 Support Issue](https://github.com/GoogleChromeLabs/chrome-for-testing/issues/1)
+
 ## Implementation Details
 
 * Navigates to the main page using `puppeteer`.
