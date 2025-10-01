@@ -2,7 +2,9 @@ import fs from "node:fs";
 import { join } from "node:path";
 import type { Browser } from "puppeteer";
 import { jest } from "@jest/globals";
-import { generatePDF, generateSlug, normalizeURL } from "site2pdf/index";
+import { buildURLPattern, generatePDF, generateSlug, normalizeURL } from "site2pdf/index";
+
+const escapeForPattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 beforeAll(() => {
 	jest.spyOn(console, "log").mockImplementation(() => {});
@@ -14,13 +16,20 @@ afterAll(() => {
 
 describe("generatePDF", () => {
 	it("should generate a PDF for a valid URL", async () => {
+		let capturedPatternArgs: { patternSource: string; patternFlags: string } | undefined;
 		const mockBrowser = {
 			newPage: async () => ({
-				evaluate: async () => [
-					"https://example.com/page1",
-					"https://example.com/page2",
-					"https://example.com/page3",
-				],
+				evaluate: async (
+					_fn: unknown,
+					payload: { patternSource: string; patternFlags: string },
+				) => {
+					capturedPatternArgs = payload;
+					return [
+						"https://example.com/page1",
+						"https://example.com/page2",
+						"https://example.com/page3",
+					];
+				},
 				pdf: async () => {
 					const fixturePath = join(
 						process.cwd(),
@@ -41,7 +50,7 @@ describe("generatePDF", () => {
 		};
 
 		const url = "https://example.com";
-		const urlPattern = new RegExp(`^${url}`);
+		const urlPattern = new RegExp(`^${url}`, "i");
 		const pdfBuffer = await generatePDF(
 			ctx,
 			url,
@@ -50,8 +59,12 @@ describe("generatePDF", () => {
 		);
 
 		expect(pdfBuffer).toBeInstanceOf(Buffer);
+		expect(capturedPatternArgs).toEqual({
+			patternSource: new RegExp(`^${url}`).source,
+			patternFlags: "i",
+		});
+		});
 	});
-});
 
 describe("testGenerateSlug", () => {
 	it("should generate correct slug for various URLs", () => {
@@ -108,5 +121,21 @@ describe("normalizeURL", () => {
 			const normalized = normalizeURL(input);
 			expect(normalized).toBe(expected);
 		}
+	});
+});
+
+describe("buildURLPattern", () => {
+	it("should escape URL characters when no pattern argument is provided", () => {
+		const mainURL = "https://example.com/docs.v1/";
+		const pattern = buildURLPattern(undefined, mainURL);
+		const expectedSource = new RegExp(`^${escapeForPattern(mainURL)}`).source;
+		expect(pattern.source).toBe(expectedSource);
+		expect(pattern.flags).toBe("");
+	});
+
+	it("should parse literal style patterns with flags", () => {
+		const pattern = buildURLPattern("/foo-bar/i", "https://example.com");
+		expect(pattern.source).toBe("foo-bar");
+		expect(pattern.flags).toBe("i");
 	});
 });

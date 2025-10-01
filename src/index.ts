@@ -23,9 +23,35 @@ type BrowserContext = {
 	page: Page,
 };
 
+function escapeRegExp(value: string): string {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function createDefaultPattern(url: string): RegExp {
+	return new RegExp(`^${escapeRegExp(url)}`);
+}
+
+// Accept CLI patterns written as /pattern/flags while keeping backward compatibility with plain strings.
+export function buildURLPattern(patternArg: string | undefined, mainURL: string): RegExp {
+	if (!patternArg) {
+		return createDefaultPattern(mainURL);
+	}
+
+	const regexLiteralMatch = patternArg.match(/^\/(.*)\/([a-z]*)$/i);
+	if (regexLiteralMatch) {
+		const [, patternSource, patternFlags] = regexLiteralMatch;
+		return new RegExp(patternSource, patternFlags);
+	}
+
+	return new RegExp(patternArg);
+}
+
 async function useBrowserContext() {
 	const browser = await puppeteer.launch({
 		headless: true,
+		// Keep Chrome launch working inside sandboxed environments.
+		args: ["--no-sandbox", "--disable-setuid-sandbox"],
+		userDataDir: join(process.cwd(), ".site2pdf-chrome"),
 		...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
 	});
 	const page = (await browser.pages())[0];
@@ -39,17 +65,17 @@ export async function generatePDF(
 	ctx: BrowserContext,
 	url: string,
 	concurrentLimit: number,
-	urlPattern: RegExp = new RegExp(`^${url}`),
+	urlPattern: RegExp = createDefaultPattern(url),
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
 	const page = await ctx.browser.newPage();
 	await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-	const subLinks = await page.evaluate((patternString) => {
-		const pattern = new RegExp(patternString);
+	const subLinks = await page.evaluate(({ patternSource, patternFlags }) => {
+		const pattern = new RegExp(patternSource, patternFlags);
 		const links = Array.from(document.querySelectorAll("a"));
 		return links.map((link) => link.href).filter((href) => pattern.test(href));
-	}, urlPattern.source);
+	}, { patternSource: urlPattern.source, patternFlags: urlPattern.flags });
 
 	const subLinksWithoutAnchors = subLinks.map((link) => normalizeURL(link));
 	const uniqueSubLinks = Array.from(new Set(subLinksWithoutAnchors));
@@ -60,13 +86,13 @@ export async function generatePDF(
 
 	const pdfDoc = await PDFDocument.create();
 
-	const generatePDFForPage = async (link: string) => {
-		console.log(`loading ${link}`);
-		const newPage = await ctx.browser.newPage();
-		let pdfBytes: Uint8Array;
-		try {
-			await newPage.goto(link, { waitUntil: 'domcontentloaded' });
-			pdfBytes = await newPage.pdf({ format: "A4" });
+		const generatePDFForPage = async (link: string) => {
+			console.log(`loading ${link}`);
+			const newPage = await ctx.browser.newPage();
+			let pdfBytes: Buffer;
+			try {
+				await newPage.goto(link, { waitUntil: 'domcontentloaded' });
+				pdfBytes = await newPage.pdf({ format: "A4" });
 			console.log(`Generated PDF for ${link}`);
 			return Buffer.from(pdfBytes);
 		} catch (error) {
@@ -123,14 +149,13 @@ export function normalizeURL(url: string): string {
 
 export async function main() {
 	const mainURL = process.argv[2];
-	const urlPattern = process.argv[3]
-		? new RegExp(process.argv[3])
-		: new RegExp(`^${mainURL}`);
 
 	if (!mainURL) {
 		showHelp();
 		throw new Error("<main_url> is required");
 	}
+
+	const urlPattern = buildURLPattern(process.argv[3], mainURL);
 
 	console.log(
 		`Generating PDF for ${mainURL} and sub-links matching ${urlPattern}`,

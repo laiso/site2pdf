@@ -39,6 +39,8 @@ npx site2pdf-cli <main_url> [url_pattern]
 
 * `<main_url>`: The main URL of the website to be converted to PDF.
 * `[url_pattern]`: Optional regular expression to filter sub-links. Defaults to matching only links within the main URL domain.
+  * You can pass either a plain pattern string (e.g. `'https://example.com/en'`) or a literal-style expression including flags (e.g. `'/https:\/\/example\.com\/en/i'`).
+  * When omitted, the tool now escapes special characters in `<main_url>` before anchoring it, preventing accidental over-matching.
 
 ### Example
 
