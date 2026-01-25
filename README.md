@@ -21,11 +21,14 @@ npx site2pdf-cli https://example.com
 
 Output is saved to `./out/<domain>.pdf`.
 
-## Installation
+## Installation (from source)
 
-To install the tool globally on your machine, run:
+To install the tool globally on your machine from source, run:
 
 ```bash
+git clone https://github.com/laiso/site2pdf.git
+cd site2pdf
+npm install
 npm run build
 npm link
 ```
