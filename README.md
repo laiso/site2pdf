@@ -21,6 +21,24 @@ npx site2pdf-cli https://example.com
 
 Output is saved to `./out/<domain>.pdf`.
 
+## Installation (from source)
+
+To install the tool globally on your machine from source, run:
+
+```bash
+git clone https://github.com/laiso/site2pdf.git
+cd site2pdf
+npm install
+npm run build
+npm link
+```
+
+After installation, you can run the tool directly using the `site2pdf` command from anywhere:
+
+```bash
+site2pdf <main_url> [url_pattern]
+```
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or later recommended)
@@ -112,7 +130,7 @@ npm install
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Run in development mode with watch |
+| `npm run dev -- <main_url> [url_pattern]` | Run in development mode with watch |
 | `npm run build` | Compile TypeScript |
 | `npm test` | Run tests |
 | `npx biome lint` | Check for lint issues |
