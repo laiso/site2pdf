@@ -1,6 +1,6 @@
 {
 	"name": "site2pdf-cli",
-	"version": "0.1.12",
+	"version": "0.1.13",
 	"type": "module",
 	"description": "Generate comprehensive PDFs of entire websites, ideal for RAG. ",
 	"bin": {
