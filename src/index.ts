@@ -69,7 +69,7 @@ export async function generatePDF(
 ): Promise<Buffer> {
 	const limit = pLimit(concurrentLimit);
 	const page = await ctx.browser.newPage();
-	await page.goto(url, { waitUntil: 'domcontentloaded' });
+	await page.goto(url, { waitUntil: 'networkidle2' });
 
 	const subLinks = await page.evaluate(({ patternSource, patternFlags }) => {
 		const pattern = new RegExp(patternSource, patternFlags);
@@ -91,7 +91,7 @@ export async function generatePDF(
 			const newPage = await ctx.browser.newPage();
 			let pdfBytes: Buffer;
 			try {
-				await newPage.goto(link, { waitUntil: 'domcontentloaded' });
+				await newPage.goto(link, { waitUntil: 'networkidle2' });
 				pdfBytes = await newPage.pdf({ format: "A4" });
 			console.log(`Generated PDF for ${link}`);
 			return Buffer.from(pdfBytes);
