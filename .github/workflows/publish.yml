@@ -30,7 +30,20 @@ jobs:
     - name: Run linting
       run: npm run lint
       
+    - name: Check published version
+      id: version
+      run: |
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version >/dev/null 2>&1; then
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "$PACKAGE_NAME@$PACKAGE_VERSION is already published. Skipping npm publish."
+        else
+          echo "published=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Publish to NPM
+      if: steps.version.outputs.published != 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
