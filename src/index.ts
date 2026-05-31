@@ -156,14 +156,14 @@ async function useBrowserContext(executablePath?: string) {
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (message.includes("Could not find") || message.includes("Failed to launch")) {
-			console.error(`\nError: Chrome/Chromium browser could not be found or launched.`);
-			console.error(`\nTo fix this, try one of the following:\n`);
-			console.error(`  1. Install Chrome for Puppeteer:`);
-			console.error(`     npx puppeteer browsers install chrome\n`);
-			console.error(`  2. Specify the path to an existing Chrome/Chromium installation:`);
-			console.error(`     site2pdf <url> --executablePath /path/to/chrome\n`);
-			console.error(`  3. Set the CHROME_PATH environment variable:`);
-			console.error(`     export CHROME_PATH=/path/to/chrome\n`);
+			console.error("\nError: Chrome/Chromium browser could not be found or launched.");
+			console.error("\nTo fix this, try one of the following:\n");
+			console.error("  1. Install Chrome for Puppeteer:");
+			console.error("     npx puppeteer browsers install chrome\n");
+			console.error("  2. Specify the path to an existing Chrome/Chromium installation:");
+			console.error("     site2pdf <url> --executablePath /path/to/chrome\n");
+			console.error("  3. Set the CHROME_PATH environment variable:");
+			console.error("     export CHROME_PATH=/path/to/chrome\n");
 		}
 		throw error;
 	}

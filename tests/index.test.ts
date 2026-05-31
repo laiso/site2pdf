@@ -190,7 +190,7 @@ describe("resolveExecutablePath", () => {
 
 	afterEach(() => {
 		if (originalEnv === undefined) {
-			delete process.env.CHROME_PATH;
+			Reflect.deleteProperty(process.env, "CHROME_PATH");
 		} else {
 			process.env.CHROME_PATH = originalEnv;
 		}
@@ -209,7 +209,7 @@ describe("resolveExecutablePath", () => {
 	});
 
 	it("should return undefined when no path specified", () => {
-		delete process.env.CHROME_PATH;
+		Reflect.deleteProperty(process.env, "CHROME_PATH");
 		const result = resolveExecutablePath(undefined);
 		expect(result).toBeUndefined();
 	});
