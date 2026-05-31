@@ -2,7 +2,8 @@ import { Buffer } from "node:buffer";
 import { writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { cpus } from "node:os";
+import { cpus, platform } from "node:os";
+import { execSync } from "node:child_process";
 
 import puppeteer, { type Browser, type Page } from "puppeteer";
 import pLimit from "p-limit";
@@ -10,11 +11,18 @@ import { PDFDocument } from "pdf-lib";
 
 function showHelp() {
 	console.log(`
-Usage: site2pdf-cli <main_url> [url_pattern]
+Usage: site2pdf-cli <main_url> [url_pattern] [options]
 
 Arguments:
-  main_url         The main URL to generate PDF from
-  url_pattern      (Optional) Regular expression pattern to match sub-links (default: ^main_url)
+  main_url              The main URL to generate PDF from
+  url_pattern           (Optional) Regular expression pattern to match sub-links (default: ^main_url)
+
+Options:
+  --executablePath <path>  Path to a Chrome/Chromium executable
+  --help                   Show this help message
+
+Environment Variables:
+  CHROME_PATH              Path to a Chrome/Chromium executable (alternative to --executablePath)
 `);
 }
 
@@ -46,19 +54,98 @@ export function buildURLPattern(patternArg: string | undefined, mainURL: string)
 	return new RegExp(patternArg);
 }
 
-async function useBrowserContext() {
-	const browser = await puppeteer.launch({
-		headless: true,
-		// Keep Chrome launch working inside sandboxed environments.
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-		userDataDir: join(process.cwd(), ".site2pdf-chrome"),
-		...(process.env.CHROME_PATH && { executablePath: process.env.CHROME_PATH }),
-	});
-	const page = (await browser.pages())[0];
-	return {
-		browser,
-		page
-	};
+const COMMON_CHROME_PATHS: Record<string, string[]> = {
+	win32: [
+		"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+		"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+		"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+		"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+	],
+	darwin: [
+		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+		"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+		"/Applications/Chromium.app/Contents/MacOS/Chromium",
+	],
+	linux: [
+		"/usr/bin/google-chrome",
+		"/usr/bin/google-chrome-stable",
+		"/usr/bin/chromium",
+		"/usr/bin/chromium-browser",
+		"/usr/bin/microsoft-edge",
+		"/snap/bin/chromium",
+	],
+};
+
+export function detectChromePath(): string | undefined {
+	const os = platform();
+	const candidates = COMMON_CHROME_PATHS[os] ?? COMMON_CHROME_PATHS.linux;
+
+	for (const candidate of candidates) {
+		if (existsSync(candidate)) {
+			return candidate;
+		}
+	}
+
+	// Try `which`/`where` as a fallback
+	try {
+		const cmd = os === "win32" ? "where" : "which";
+		for (const name of ["google-chrome", "chromium", "chromium-browser", "microsoft-edge"]) {
+			try {
+				const result = execSync(`${cmd} ${name}`, { stdio: "pipe" }).toString().trim();
+				if (result) {
+					return result.split(/\r?\n/)[0];
+				}
+			} catch {
+				// Not found, try next
+			}
+		}
+	} catch {
+		// Command not available
+	}
+
+	return undefined;
+}
+
+export function resolveExecutablePath(cliPath?: string): string | undefined {
+	if (cliPath) {
+		return cliPath;
+	}
+	if (process.env.CHROME_PATH) {
+		return process.env.CHROME_PATH;
+	}
+	return undefined;
+}
+
+async function useBrowserContext(executablePath?: string) {
+	const resolvedPath = executablePath || detectChromePath();
+
+	try {
+		const browser = await puppeteer.launch({
+			headless: true,
+			// Keep Chrome launch working inside sandboxed environments.
+			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			userDataDir: join(process.cwd(), ".site2pdf-chrome"),
+			...(resolvedPath && { executablePath: resolvedPath }),
+		});
+		const page = (await browser.pages())[0];
+		return {
+			browser,
+			page
+		};
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error);
+		if (message.includes("Could not find") || message.includes("Failed to launch")) {
+			console.error(`\nError: Chrome/Chromium browser could not be found or launched.`);
+			console.error(`\nTo fix this, try one of the following:\n`);
+			console.error(`  1. Install Chrome for Puppeteer:`);
+			console.error(`     npx puppeteer browsers install chrome\n`);
+			console.error(`  2. Specify the path to an existing Chrome/Chromium installation:`);
+			console.error(`     site2pdf <url> --executablePath /path/to/chrome\n`);
+			console.error(`  3. Set the CHROME_PATH environment variable:`);
+			console.error(`     export CHROME_PATH=/path/to/chrome\n`);
+		}
+		throw error;
+	}
 }
 
 export async function generatePDF(
@@ -147,22 +234,52 @@ export function normalizeURL(url: string): string {
 		: urlWithoutAnchor;
 }
 
+export function parseArgs(argv: string[]): { mainURL?: string; urlPattern?: string; executablePath?: string; help: boolean } {
+	const args = argv.slice(2);
+	let mainURL: string | undefined;
+	let urlPattern: string | undefined;
+	let executablePath: string | undefined;
+	let help = false;
+
+	for (let i = 0; i < args.length; i++) {
+		if (args[i] === "--executablePath" && i + 1 < args.length) {
+			executablePath = args[++i];
+		} else if (args[i] === "--help" || args[i] === "-h") {
+			help = true;
+		} else if (args[i].startsWith("--")) {
+			// Skip unknown flags
+		} else if (!mainURL) {
+			mainURL = args[i];
+		} else if (!urlPattern) {
+			urlPattern = args[i];
+		}
+	}
+
+	return { mainURL, urlPattern, executablePath, help };
+}
+
 export async function main() {
-	const mainURL = process.argv[2];
+	const { mainURL, urlPattern: patternArg, executablePath, help } = parseArgs(process.argv);
+
+	if (help) {
+		showHelp();
+		return;
+	}
 
 	if (!mainURL) {
 		showHelp();
 		throw new Error("<main_url> is required");
 	}
 
-	const urlPattern = buildURLPattern(process.argv[3], mainURL);
+	const urlPattern = buildURLPattern(patternArg, mainURL);
 
 	console.log(
 		`Generating PDF for ${mainURL} and sub-links matching ${urlPattern}`,
 	);
 	let ctx: BrowserContext | undefined;
 	try {
-		ctx = await useBrowserContext();
+		const resolvedPath = resolveExecutablePath(executablePath);
+		ctx = await useBrowserContext(resolvedPath);
 		const pdfBuffer = await generatePDF(ctx, mainURL, cpus().length, urlPattern);
 		const slug = generateSlug(mainURL);
 		const outputDir = join(process.cwd(), "out");

@@ -3,6 +3,7 @@
 		"module": "esnext",
 		"target": "esnext",
 		"moduleResolution": "node",
+		"ignoreDeprecations": "5.0",
 		"allowJs": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
