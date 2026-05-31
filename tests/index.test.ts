@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { join } from "node:path";
 import type { Browser } from "puppeteer";
 import { jest } from "@jest/globals";
-import { buildURLPattern, generatePDF, generateSlug, normalizeURL } from "site2pdf/index";
+import { buildURLPattern, generatePDF, generateSlug, normalizeURL, parseArgs, detectChromePath, resolveExecutablePath } from "site2pdf/index";
 
 const escapeForPattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -137,5 +137,87 @@ describe("buildURLPattern", () => {
 		const pattern = buildURLPattern("/foo-bar/i", "https://example.com");
 		expect(pattern.source).toBe("foo-bar");
 		expect(pattern.flags).toBe("i");
+	});
+});
+
+describe("parseArgs", () => {
+	it("should parse mainURL as first positional argument", () => {
+		const result = parseArgs(["node", "script.js", "https://example.com"]);
+		expect(result.mainURL).toBe("https://example.com");
+		expect(result.urlPattern).toBeUndefined();
+		expect(result.executablePath).toBeUndefined();
+		expect(result.help).toBe(false);
+	});
+
+	it("should parse urlPattern as second positional argument", () => {
+		const result = parseArgs(["node", "script.js", "https://example.com", "/docs/"]);
+		expect(result.mainURL).toBe("https://example.com");
+		expect(result.urlPattern).toBe("/docs/");
+	});
+
+	it("should parse --executablePath option", () => {
+		const result = parseArgs(["node", "script.js", "https://example.com", "--executablePath", "/usr/bin/chrome"]);
+		expect(result.mainURL).toBe("https://example.com");
+		expect(result.executablePath).toBe("/usr/bin/chrome");
+	});
+
+	it("should parse --executablePath before positional arguments", () => {
+		const result = parseArgs(["node", "script.js", "--executablePath", "/usr/bin/chrome", "https://example.com"]);
+		expect(result.mainURL).toBe("https://example.com");
+		expect(result.executablePath).toBe("/usr/bin/chrome");
+	});
+
+	it("should parse --help flag", () => {
+		const result = parseArgs(["node", "script.js", "--help"]);
+		expect(result.help).toBe(true);
+	});
+
+	it("should parse -h flag", () => {
+		const result = parseArgs(["node", "script.js", "-h"]);
+		expect(result.help).toBe(true);
+	});
+
+	it("should handle all arguments together", () => {
+		const result = parseArgs(["node", "script.js", "https://example.com", "/pattern/i", "--executablePath", "/usr/bin/chrome"]);
+		expect(result.mainURL).toBe("https://example.com");
+		expect(result.urlPattern).toBe("/pattern/i");
+		expect(result.executablePath).toBe("/usr/bin/chrome");
+	});
+});
+
+describe("resolveExecutablePath", () => {
+	const originalEnv = process.env.CHROME_PATH;
+
+	afterEach(() => {
+		if (originalEnv === undefined) {
+			delete process.env.CHROME_PATH;
+		} else {
+			process.env.CHROME_PATH = originalEnv;
+		}
+	});
+
+	it("should prefer CLI path over env variable", () => {
+		process.env.CHROME_PATH = "/env/chrome";
+		const result = resolveExecutablePath("/cli/chrome");
+		expect(result).toBe("/cli/chrome");
+	});
+
+	it("should use CHROME_PATH env variable when no CLI path", () => {
+		process.env.CHROME_PATH = "/env/chrome";
+		const result = resolveExecutablePath(undefined);
+		expect(result).toBe("/env/chrome");
+	});
+
+	it("should return undefined when no path specified", () => {
+		delete process.env.CHROME_PATH;
+		const result = resolveExecutablePath(undefined);
+		expect(result).toBeUndefined();
+	});
+});
+
+describe("detectChromePath", () => {
+	it("should return a string or undefined", () => {
+		const result = detectChromePath();
+		expect(result === undefined || typeof result === "string").toBe(true);
 	});
 });
