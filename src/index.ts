@@ -116,17 +116,38 @@ export function resolveExecutablePath(cliPath?: string): string | undefined {
 	return undefined;
 }
 
-async function useBrowserContext(executablePath?: string) {
-	const resolvedPath = executablePath || detectChromePath();
+async function launchBrowser(executablePath?: string): Promise<Browser> {
+	return puppeteer.launch({
+		headless: true,
+		// Keep Chrome launch working inside sandboxed environments.
+		args: ["--no-sandbox", "--disable-setuid-sandbox"],
+		userDataDir: join(process.cwd(), ".site2pdf-chrome"),
+		...(executablePath && { executablePath }),
+	});
+}
 
+function isMissingBrowserError(error: unknown): boolean {
+	const message = error instanceof Error ? error.message : String(error);
+	return message.includes("Could not find Chrome") || message.includes("Browser was not found");
+}
+
+async function useBrowserContext(executablePath?: string) {
 	try {
-		const browser = await puppeteer.launch({
-			headless: true,
-			// Keep Chrome launch working inside sandboxed environments.
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			userDataDir: join(process.cwd(), ".site2pdf-chrome"),
-			...(resolvedPath && { executablePath: resolvedPath }),
-		});
+		let browser: Browser;
+		if (executablePath) {
+			browser = await launchBrowser(executablePath);
+		} else {
+			try {
+				browser = await launchBrowser();
+			} catch (error: unknown) {
+				const detectedPath = isMissingBrowserError(error) ? detectChromePath() : undefined;
+				if (!detectedPath) {
+					throw error;
+				}
+				browser = await launchBrowser(detectedPath);
+			}
+		}
+
 		const page = (await browser.pages())[0];
 		return {
 			browser,
