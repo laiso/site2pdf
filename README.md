@@ -41,7 +41,7 @@ site2pdf <main_url> [url_pattern]
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [Node.js](https://nodejs.org/) (v22.12 or later)
 
 ### Linux Dependencies
 
@@ -59,13 +59,14 @@ sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
 ## Usage
 
 ```bash
-npx site2pdf-cli <main_url> [url_pattern]
+npx site2pdf-cli <main_url> [url_pattern] [--executablePath <chrome>]
 ```
 
 | Argument | Description |
 |----------|-------------|
 | `<main_url>` | The starting URL to crawl and convert |
 | `[url_pattern]` | Optional regex to filter which links to include (defaults to same domain) |
+| `--executablePath <path>` | Optional path to Chrome/Chromium (same as `CHROME_PATH`) |
 
 ### URL Pattern Formats
 
@@ -93,6 +94,45 @@ npx site2pdf-cli "https://www.typescriptlang.org/docs/handbook/" "https://www.ty
 | `CHROME_PATH` | Path to a custom Chrome/Chromium executable |
 
 ## Troubleshooting
+
+### Chrome failed to launch (`spawn Unknown system error -88`)
+
+The CLI launches headless Chrome via Puppeteer. If the bundled Chrome cannot start, you may see a Node spawn error instead of a Chrome-specific message, for example:
+
+```
+Error generating PDF: Error: spawn Unknown system error -88
+    at ChildProcess.spawn ...
+    at ChromeLauncher.launch ...
+  errno: -88,
+  code: 'Unknown system error -88',
+  syscall: 'spawn'
+```
+
+This came from Puppeteer 22's unsigned Chrome for Testing: Node cannot `spawn` it on newer macOS (`errno: -88`). It is not a problem with the target website. Upgrading Puppeteer (this project now uses v25) downloads a signed Chrome and avoids that spawn error.
+
+If launch still fails, use the Chrome (or Chromium / Edge) already installed on the machine:
+
+```bash
+npx site2pdf-cli https://example.com \
+  --executablePath "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+```
+
+or:
+
+```bash
+export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+npx site2pdf-cli https://example.com
+```
+
+Typical paths:
+
+| OS | Executable |
+|----|------------|
+| macOS | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
+| Windows | `C:\Program Files\Google\Chrome\Application\chrome.exe` |
+| Linux | `/usr/bin/google-chrome` or `/usr/bin/chromium` |
+
+You can also install Puppeteer's Chrome with `npx puppeteer browsers install chrome`.
 
 ### Windows: Sandbox Errors
 
