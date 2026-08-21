@@ -1,5 +1,5 @@
 # Use official Node.js image as base
-FROM node:20-slim
+FROM node:22-slim
 
 # Install Linux dependencies
 RUN apt-get update && \
