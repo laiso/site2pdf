@@ -128,15 +128,17 @@ async function launchBrowser(executablePath?: string): Promise<Browser> {
 
 function isBrowserLaunchError(error: unknown): boolean {
 	const message = error instanceof Error ? error.message : String(error);
-	const errno = typeof error === "object" && error !== null && "errno" in error
-		? Number((error as { errno?: number }).errno)
+	const details = typeof error === "object" && error !== null
+		? (error as { errno?: number; syscall?: string })
 		: undefined;
+	const errno = details && "errno" in details ? Number(details.errno) : undefined;
+	const syscall = details && "syscall" in details ? String(details.syscall) : undefined;
 	return (
 		message.includes("Could not find Chrome") ||
 		message.includes("Browser was not found") ||
 		message.includes("Failed to launch") ||
-		message.includes("spawn") ||
-		errno === -88
+		message.includes("Unknown system error -88") ||
+		(syscall === "spawn" && errno === -88)
 	);
 }
 
@@ -168,7 +170,7 @@ async function useBrowserContext(executablePath?: string) {
 		if (
 			message.includes("Could not find") ||
 			message.includes("Failed to launch") ||
-			message.includes("spawn")
+			isBrowserLaunchError(error)
 		) {
 			console.error("\nError: Chrome/Chromium browser could not be found or launched.");
 			console.error("\nTo fix this, try one of the following:\n");
