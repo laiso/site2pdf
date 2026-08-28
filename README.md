@@ -152,6 +152,18 @@ Chrome does not provide ARM64 binaries for Linux. You'll see errors like:
 
 See [Chrome for Testing ARM64 Support Issue](https://github.com/GoogleChromeLabs/chrome-for-testing/issues/1).
 
+It can still be run with system `chromium-browser`, although behaviour may vary depending on version:
+
+```bash
+cd site2pdf
+rm -rf $HOME/.cache/puppeteer/*
+sudo dnf install -y chromium
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true CHROME_PATH=/usr/bin/chromium-browser PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser npm install
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true CHROME_PATH=/usr/bin/chromium-browser PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser npm run build
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true CHROME_PATH=/usr/bin/chromium-browser PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser npm link
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true CHROME_PATH=/usr/bin/chromium-browser PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser site2pdf-cli https://docs.example.com
+```
+
 ## How It Works
 
 1. Launches headless Chrome via Puppeteer
